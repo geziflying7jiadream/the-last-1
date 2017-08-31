@@ -1,0 +1,110 @@
+类：
+maJiangConstants  
+麻将信息：
+######################################
+     * 1-9          1饼到9饼
+     * 10-18        1条到9条
+     * 19-27        1万到9万
+     * 28-30        中发白
+     * 31-34        东南西北
+     * 每张麻将4张
+     * 35-42        梅兰竹菊，春夏秋冬
+     * 每张麻将1张
+     
+    $operatingTypes ：操作类型 0过 1吃 2碰 3杠 4胡 5自摸 6暗杠
+    refreshMajiang（）：洗牌
+    
+    faMj($room,$game):发麻将
+    庄家，摸牌次数，前三次人手3张，最后一手庄家2张闲家1张：
+          $room vo_Room类  房间信息
+          $game vo_MajiangGame类 金花牌局的数据
+          @return array
+          
+    faMjTest($room,$game)：发麻将测试
+    
+    findMajiangStartEnd($mjVal):获取麻将所处区间
+          $mjVal:??????
+    
+    getBaiDa($mjVal)：??????
+          $mjVal：??????
+          
+    isFlowerMj($mjVal)：判断是否花牌
+          $mjVal:??????
+          
+    hasFlowerMj($mjList)：有花牌
+            有花牌，判断是花牌，isFlowerMj($i)   return true
+            
+    hasOperating($op):判断操作是否合法
+          $op:操作类型  ——>  $operatingTypes  0过 1吃 2碰 3杠 4胡 5自摸 6暗杠
+          
+    huagang($mj,$flowerList):硬花杠
+          中发白28-30，梅兰竹菊3-38，春夏秋冬39-42
+          
+    gang($mj,$mjList,$game）:杠
+          $mj   int             被杠的麻将
+          $mjList   array       杠牌的人的麻将列表
+          *$game vo_MajiangGame  金花牌局的数据
+          * @return bool   
+          
+    peng($mj,$mjList)：碰
+          $mj   int             被碰的麻将
+          $mjList   array       碰牌的人的麻将列表
+          * @return bool
+          
+    chi($mj,$mjs)：吃
+         ????why??????          >28||count<2 false  中发白，梅兰竹菊，春夏秋冬/牌数不够2张 返回false
+          $mj   int             被吃的麻将
+          $mjs   array          使用的是哪两张牌来吃牌
+          * @return bool
+          
+    ting($mjList,$chiList,$pengList,$gangList,$angangList,$game):听牌
+          听牌  中判断  胡牌：hu($mj,$mjList,$chiList,$pengList,$gangList,$angangList,$game)
+          $game  vo_MajiangGame 金花牌局的数据
+         
+    hu($mj,$mjList,$chiList,$pengList,$gangList,$angangList,$game)：胡牌
+          使用数组工具ArrayUtil：：
+          推到胡：TuiDaoHu类     <——胡牌顶级类：BaseHu
+          七小队：QiXiaoDui类    <——胡牌顶级类：BaseHu
+          
+    waiBao($uid,$mjList,$game,$type)；外包
+          $game vo_MajiangGame  金花牌局的数据
+          ???????               JinGouDiao类：金钩钓   <——胡牌顶级类：TuiDaoHu
+          
+    huWaiBao($uid,$mjList,$game,$type):是否胡外包
+          ???????               QingYise类：清一色     <——胡牌顶级类：BaseHu
+          ???????               PengPengHu类：碰碰胡   <——胡牌顶级类：BaseHu
+          
+    isWaiBaoJiang($dingJiangMjVal,$huMj)：判断是否符合外包将
+          $dingJiangMjVal     ????????
+    
+    getWannengCount(&$mjList,$game)：获取万能牌个数
+          $game  vo_MajiangGame 金花牌局的数据
+          
+    findMajiangStartEnd($mjVal)：获取麻将所处区间
+          return array($start,$end);
+          $mjVal
+          
+    findMajiangStartEnd2($mjVals)：获取麻将所在区间2
+          $mjVals
+          
+    getNewMj(&$game,$opVal):获取一张新的麻将
+          $opVal    ???????          
+#######################################################################################################
+     
+     
+ vo_MajiangGame
+ 金花牌局的数据：
+ #####################################
+ 
+ #####################################
+ 
+ 
+ vo_Room
+ 房间信息：
+ ########################################
+ $id 房间id
+ $players 房间成员列表
+ $owner 房主
+ $max_player 最大玩家数量
+ $data  房间里面附加信息
+ ########################################
