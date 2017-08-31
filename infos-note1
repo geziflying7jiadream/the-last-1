@@ -1,6 +1,6 @@
 类：
 maJiangConstants  
-麻将信息：
+麻将信息相关逻辑
 ######################################
      * 1-9          1饼到9饼
      * 10-18        1条到9条
@@ -112,7 +112,7 @@ maJiangConstants
 
 4.
 MaJiangService
-麻将相关逻辑
+麻将相关逻辑消息处理
 ########################################################################
     loginGame(request):玩家登录游戏服务器
                 PlatformDao类：角色临时信息保存dao
@@ -121,7 +121,7 @@ MaJiangService
                                     $sender ->  $sender 发送消息玩家的网络信息
                             saveRole($role):保存发送者的角色信息
                                     $role -> $senderRole
-                MajiangDao类：游戏数据信息更新dao
+                MajiangDao类：游戏数据信息更新redis操作
                             getMajiangGame($this->room->id):获取游戏数据
                                     $this->room->id  $id: vo_room类   房间id   
                             getPlayerMajiang($uid):获取玩家的麻将列表
@@ -129,7 +129,51 @@ MaJiangService
                                     $this->room->id  $id: vo_room类   房间id 
                             $game->chupai记录是否出牌，
                             $game->isChuPai[$game->currentUid]判断是否出国牌   $game->currentUid当前操作者
-                MjGameConstant类：获取游戏需要发送到客户端的 数据
-                            getGameSendMsg($game)            
+                MjGameConstant类：游戏相关逻辑
+                            getGameSendMsg($game)   获取游戏需要发送到客户端的 数据  
+                            
 
 #################################################
+
+
+5.
+MjGameConstants
+游戏相关逻辑
+#################################################
+    createGame($room,$jushu):创建麻将游戏
+                包含：
+                    vo_MajiangGame类：金花牌局数据（初始化游戏数据变量）
+                游戏房间ID，当前用户currentUid，当前庄家zhuang,当前局数currentCount,最大局数maxCount，麻将总数totalMj,游戏成员players，
+                这一局的麻将mjList    -》  MaJiangConstant::refreshMajiang()
+                
+    isAllReady($room,$game)：是否所有人都准备好了 
+    getGameSendMsg($game)：获取游戏需要发送到客户端的数据
+                 clone $game          克隆一遍又删除   ???why???
+    startGame($room,$game)：开始游戏
+                 $lastGangselfPengMj  ????????? 点碰杠后面出现所有分数由这个点碰的玩家给
+                 $samechupaiCount     连续出了相同牌的次数
+                 $chupaiCount         出过牌的数量
+                 $isChuPai            记录是否出过牌
+                 $totalPreWaibaoFan   ????????  前一个外包分
+                 totalWaibaoFan       外包分
+                 MaJiangConstant逻辑类 发牌方法：faMj($room,$game)
+    stopGame($room,$game,$huUid)：停止游戏
+                 vo_MajiangGame 设置一些游戏数据
+                 SuanFanConstant 算分类：  initFanData($totalFan,$room):初始化算分数据方法
+    isShangJia($room,$uid,$targetUid)：
+    getPlayerIndexInRoom($room,$uid)：获取玩家在房间中的哪个位置
+    getNextPlayer($room,$uid)：获取下一个出牌的人
+    getClosedUid($uid,$uids,$room)：获取相距最近的玩家
+                当前类方法：getPlayerIndexInRoom($room,$uid)  获取玩家在房间中的哪个位置
+    checkOperating($room,$game,$opVal,$playerUid,$playerMjList)：检测操作是否合法
+                $opVal：操作类型 吃碰杠胡自摸
+                SuanFanConstant  算分类：getCurrentFen($game->currentUid,$game)  ????  无法找到totalFan属性
+    checkChi($room,$game,$playerUid,$mjs)：检测是否可以吃牌
+                //吃牌只能吃上家
+                $mjs array 用来吃牌的牌是哪两张
+                当前类方法：isShangJia($room,$playerUid,$game->currentUid)
+                MaJiangConstant 麻将相关逻辑类：chi($game->lastMj,$mjs)
+    hasMj($game)：是否还有麻将
+    getGangDi($game)：获取杠底
+
+#####################################################################################
