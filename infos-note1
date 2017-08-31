@@ -108,3 +108,28 @@ maJiangConstants
  $max_player 最大玩家数量
  $data  房间里面附加信息
  ########################################
+
+
+4.
+MaJiangService
+麻将相关逻辑
+########################################################################
+    loginGame(request):玩家登录游戏服务器
+                PlatformDao类：角色临时信息保存dao
+                            saveSender($uid,$sender):保存发送者的信息
+                                    $uid -> $senderUid 发送消息的玩家UID
+                                    $sender ->  $sender 发送消息玩家的网络信息
+                            saveRole($role):保存发送者的角色信息
+                                    $role -> $senderRole
+                MajiangDao类：游戏数据信息更新dao
+                            getMajiangGame($this->room->id):获取游戏数据
+                                    $this->room->id  $id: vo_room类   房间id   
+                            getPlayerMajiang($uid):获取玩家的麻将列表
+                            getOperating($this->room->id):获取操作
+                                    $this->room->id  $id: vo_room类   房间id 
+                            $game->chupai记录是否出牌，
+                            $game->isChuPai[$game->currentUid]判断是否出国牌   $game->currentUid当前操作者
+                MjGameConstant类：获取游戏需要发送到客户端的 数据
+                            getGameSendMsg($game)            
+
+#################################################
