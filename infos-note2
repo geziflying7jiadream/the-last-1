@@ -3,6 +3,46 @@ Dao 封装redis
 Service消息处理
 VO数据结构 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;
+class/
+  base/
+    BaseDao.php
+    BaseService.php
+    BaseTrigger.php
+    BaseVO.php
+    CacheData.php
+    EventManager.php
+    MySQLShardProxy.php
+    RedisShardProxy.php
+    SessionManager.php
+    SwooleConnectHandler.php
+    SwProxyInstance.php
+    TriggerController.php
+    
+   config/
+    ApiConfig.php
+    Config.php
+    EventConfig.php
+    ForwardServerConfig.php
+    MySQLShardProxyConfig.php
+    RedisShardProxyConfig.php
+    SvrConfig.php
+    TimerConfig.php
+    
+  constant/
+    ExtGameHelper.php
+    FlowerConstant.php
+    MaJiangConstant.php
+    MjGameConstant.php
+    RoomConstant.php
+    StateConstant.php
+    SuanFanConstant.php
+
+  dao/
+    MaJiangDao.php
+    PlatformDao.php
+    
+
+
 
 
 hufuns/
@@ -71,9 +111,31 @@ service/
     ExtGameRpcService.php       游戏RPC接收器
     MaJiangService.php          麻将相关逻辑
     
-    
+ExtGameService.php  入口-》swoole
+
 vo/
     vo_MaJiangGame.php          金花牌局数据（麻将游戏初始化数据变量）    
     vo_Role.php                 角色信息
     vo_Room.php                 房间信息
     vo_User.php                 用户信息
+    
+    
+    
+redisadmin/
+  
+
+swoole/
+  bussiness/
+        asyncdb/
+        extgame/
+            ExtGameBusiness.php
+        forward/
+        game/
+        test/
+    BaseBusiness.php
+  client/
+  task/
+  timer/
+    SwooleProxyServer.php
+    SwooleSetting.php
+    SwooleWebSocketProxyServer.php
