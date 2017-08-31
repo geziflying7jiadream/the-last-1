@@ -1,3 +1,10 @@
+;;;;;;;;;;;;;;;;;;;;;;;;;;;
+Dao 封装redis    
+Service消息处理
+VO数据结构 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+
 hufuns/
     BaseHu.php            胡牌顶级类
                             hu()
@@ -64,5 +71,9 @@ service/
     ExtGameRpcService.php       游戏RPC接收器
     MaJiangService.php          麻将相关逻辑
     
-      
     
+vo/
+    vo_MaJiangGame.php          金花牌局数据（麻将游戏初始化数据变量）    
+    vo_Role.php                 角色信息
+    vo_Room.php                 房间信息
+    vo_User.php                 用户信息
