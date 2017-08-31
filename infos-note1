@@ -136,6 +136,38 @@ MaJiangService
 #################################################
 
 
+ExtGameRpcService
+游戏RPC接收器
+########################################################################################################################
+    $senderUid：发送消息的玩家Uid
+    $sender:发送消息的玩家网络
+    $senderRole:  vo_Role::角色类
+    $room: vo_Room::房间信息
+    loginGame($request):玩家登录游戏服务器
+    leaveGame($request):玩家离线
+    endGame($request):玩家投票，强制结束游戏
+    createRoom($request):玩家创建房间
+    joinRoom($request):玩家加入房间
+    leaveRoom($request):玩家离开房间
+    disbanRoom($request):玩家解散房间
+    gameMessage($request):玩家向游戏房间发送消息
+    -----------------------------------------
+    ---公用方法：
+    checkParams($request,$params):检测参数 bool
+#################################################
+
+
+ExtGameService
+游戏入口
+#########################################################################################################################
+    require_once "./swoole/SwooleWebSocketProxyServer.php"
+    require_once "./swoole/business/extgame/ExtGameBusiness.php"
+    swooleSetting::
+    ExtGameBusiness
+    SwooleProxyServer
+################################################
+
+
 5.
 MjGameConstants
 游戏相关逻辑
