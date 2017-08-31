@@ -1,0 +1,68 @@
+hufuns/
+    BaseHu.php            胡牌顶级类
+                            hu()
+                            has258()
+                            is258()
+                            checkType($mjList,$chiList,$pengList,$gangList,$angangList) 类型检测  返回值：增加的番数
+    FengYiSe.php          风一色
+                            checkType() 类型检测            
+    JiangYiSe.php         将一色
+                            checkType() 类型检测          
+    JinGouDiao.php        金钩钓
+                            checkType() 类型检测  
+    PengPengHu.php        碰碰胡
+                            checkType() 类型检测   
+    QingYiSe.php          清一色
+                            checkType() 类型检测   
+    QiXiaoDui.php         七小队
+                            hu()
+                            checkType() 类型检测
+    ShiSanBuKao.php       十三不靠
+                            hu()
+    ShiSanYao.php         十三幺
+                            hu()  
+    TuiDaoHu.php          推到胡
+                            hu()
+                            zhaoPupai() 找铺排
+                            _3continue()
+    YiTiaoLong.php        一条龙  
+                            checkType() 类型检测
+
+
+libs/
+  Flexihash/
+  PHPExcel/
+  Request/
+    AES.php
+    ArrayUtil.php       数组工具类
+    DataPaser.php
+    DateUtil.php
+    DB.php
+    IP.php
+    MemcachedUtil.php
+    MYSQL.php
+    MYSQLFlexihashHelper.php
+    PHPExcel.php
+    Point.php
+    RandomName.php
+    RedisFlexihashHelper.php
+    RedisUtil.php
+    Requests.php
+    ShardUtil.php
+    SignUtils.php
+    StringsUtil.php
+    UdpLog.php
+    UIDConstants.php
+    Values.php
+    VOCABULARY.TXT文档
+    WordFilter.php
+    XmlUtils.php
+    XxTea.php
+   
+   
+service/
+    ExtGameRpcService.php       游戏RPC接收器
+    MaJiangService.php          麻将相关逻辑
+    
+      
+    
