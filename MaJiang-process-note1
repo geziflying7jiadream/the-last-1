@@ -1,0 +1,28 @@
+枣庄麻将：
+（每天成长一小步，未来城铸成一大步）
+数据->来->去->数据结果
+extGameService.php——》SwooleWebSocketProxyService.php、extGameBusiness.php、SwooleSetting::$port、
+class/config/ApiConfig.php -> PrcServiceName = MaJiangService
+1.MaJiangService.php
+      CreateRoom($request):创建房间
+                           sender信息，role信息：   平台    存储redis
+                           createData：???
+                                   cardType：初始局数  === $jushu
+                                    paoType: 炮初始值
+                                     canChi：是否吃牌bool  初始值：true
+                           createGame:在当前room，jushu,创建游戏
+                                      vo_MaJiangGame：初始化麻将游戏数据逻辑->$mjGame
+                           updateMajiangGame: 平台   存储redis  创建好的游戏 $game
+                           ExtGameHelper::senderMessage  向玩家（客户端）推送（游戏需要发送客户端的数据 getGameSendMsg）消息
+                           ExtGameHelper::sendGameCreate  向平台发送 游戏创建成功
+                           ExtGameHelper：platFormPath平台路径、（发送游戏操作：向玩家推送消息、游戏状态[创建成功、开始、结束、保存战绩]、消耗房卡）
+      JoinRoom($request):加入房间
+                           
+      Ready($request):游戏准备工作（$game）
+                      整理最开始状态：
+                      MajiangDao::delPlayerMajiangByRoom($this->room);                   ?????
+                      currentCount:当前局数
+                      totalFan：总分初始100
+      开始游戏：
+      ChiPai($request):吃牌
+      
