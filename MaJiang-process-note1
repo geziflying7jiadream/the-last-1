@@ -32,9 +32,41 @@ class/config/ApiConfig.php -> PrcServiceName = MaJiangService
                             1.先整理本局最开始状态：
                             MajiangDao::delPlayerMajiangByRoom($this->room);      删除房间中玩家的麻将（上一局数据）
                             MajiangDao::clearOperating                            删除操作（包含操作，操作count）
-                            判断是否第一局：
-                            currentCount:当前局数
-                            totalFan：总分初始100
+                                  判断是否第一局：
+                                        currentCount:当前局数
+                                        totalFan：总分初始100
+                                        第一局：room中的所有players,
+                                              遍历所有player:判断totalFan是否NULL，每个成员初始分为100：$game->totalFan[$uuid]=100
+                                      第一局准备工作完成：
+                                          ExtGameHelper::sendGameStart($room->id);        向平台发送 游戏开始的消息
+                                          ExtGameHelper::sendUseCard($room->id);  ?????   向平台发送 消耗房卡,一般在第一轮游戏完成之后就调用
+                                  不是第一局：
+                                        startGame($room,$game):开始游戏逻辑                返回值：MaJiangConstant::faMj($room,$game)  发麻将
+                            开始游戏：
+                            MjGameConstant::startGame($room,$game)                        返回值：array($game,$myLists)
+                            遍历$myLists:
+                                    MajiangDao::updatePlayerMajiang($uid2,$list)：        平台redis  更新玩家的麻将列表
+                        接下来：            
+                            MajiangDao::updateMajiangGame($game)      redis  更新游戏数据  
+                        --------------------上面-------服务器端操作（第一局：平台发送游戏开始消息；除外）------------------------------------------
+                        向房间中玩家推送消息：
+                            RoomConstant::pushMsgToRoom($uid,array('tag'=>'ready','uid'=>$uid),$room,true);向房间中的玩家推送消息
+                        ------------------------------发送准备消息--给平台----------------------------------------------------------------
+                        判断准备好，发送游戏开始消息给平台：
+                            遍历玩家列表：$uid,$mjList
+                            每一个玩家网络sender---->PlatromDao::getSender($uid);
+                            向客户端 玩家推送消息：
+                            ExtGameHelper::senderMessage(array($senderInfo),$pushMsg);
       开始游戏：
       ChiPai($request):吃牌
+                  mjVal：玩家出的牌
+                  checkParams(mjVal)：检测参数---------------prc公共方法
+                  $game:获取游戏
+                        ->isStart：游戏没开始
+                        ->currentUid:当前不是你出牌
+                        ->chupai:当前不能出牌
+                        ->currentState:补花阶段不能出牌
+                  $mjList:获取玩家麻将             MajiangDao::getPlayerMajiang($uid)
+                  判断是否出了一张没有的牌:?????    ArrayUtil::contains($mjList,$mjVal)
+                  $myList:ArrayUtil::removeValue($mjList,$mjVal)
       
