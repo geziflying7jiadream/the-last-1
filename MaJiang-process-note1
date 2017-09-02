@@ -1,5 +1,6 @@
 枣庄麻将：
-（每天成长一小步，未来城铸成一大步）
+（每天成长一小步，未来铸成一大步）
+平台-------------前端
 数据->来->去->数据结果
 extGameService.php——》SwooleWebSocketProxyService.php、extGameBusiness.php、SwooleSetting::$port、
 class/config/ApiConfig.php -> PrcServiceName = MaJiangService
@@ -10,19 +11,30 @@ class/config/ApiConfig.php -> PrcServiceName = MaJiangService
                                    cardType：初始局数  === $jushu
                                     paoType: 炮初始值
                                      canChi：是否吃牌bool  初始值：true
-                           createGame:在当前room，jushu,创建游戏
+                                     创建游戏redis
+                           createGame:在当前room，jushu,              
                                       vo_MaJiangGame：初始化麻将游戏数据逻辑->$mjGame
                            updateMajiangGame: 平台   存储redis  创建好的游戏 $game
                            ExtGameHelper::senderMessage  向玩家（客户端）推送（游戏需要发送客户端的数据 getGameSendMsg）消息
                            ExtGameHelper::sendGameCreate  向平台发送 游戏创建成功
                            ExtGameHelper：platFormPath平台路径、（发送游戏操作：向玩家推送消息、游戏状态[创建成功、开始、结束、保存战绩]、消耗房卡）
       JoinRoom($request):加入房间
-                           
+                           serder信息，role信息： 平台     存储redis
+                           取出游戏数据redis
+                           getMajiangGame:取出游戏redis
+                           ExtGameHelper：senderMessage  向玩家（客户端）推送（游戏需要发送客户端的数据 getGameSendMsg）消息
       Ready($request):游戏准备工作（$game）
-                      整理最开始状态：
-                      MajiangDao::delPlayerMajiangByRoom($this->room);                   ?????
-                      currentCount:当前局数
-                      totalFan：总分初始100
+                      当前room，当前操作者senderUid，当前游戏$game
+                      $game->isReady是否准备好,
+                      准备好的话：$game->reday[当前操作者]=1，
+                      isAllReady($room,$game):是否所有人准备好，$mjLists=NULL;初始化操作者手牌，
+                      所有人准备好：
+                            1.先整理本局最开始状态：
+                            MajiangDao::delPlayerMajiangByRoom($this->room);      删除房间中玩家的麻将（上一局数据）
+                            MajiangDao::clearOperating                            删除操作（包含操作，操作count）
+                            判断是否第一局：
+                            currentCount:当前局数
+                            totalFan：总分初始100
       开始游戏：
       ChiPai($request):吃牌
       
