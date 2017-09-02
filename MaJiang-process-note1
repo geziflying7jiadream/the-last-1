@@ -58,15 +58,269 @@ class/config/ApiConfig.php -> PrcServiceName = MaJiangService
                             向客户端 玩家推送消息：
                             ExtGameHelper::senderMessage(array($senderInfo),$pushMsg);
       开始游戏：
-      ChiPai($request):吃牌
-                  mjVal：玩家出的牌
+      ChuPai($request)：出牌
+                  mjVal：出的牌
                   checkParams(mjVal)：检测参数---------------prc公共方法
                   $game:获取游戏
                         ->isStart：游戏没开始
                         ->currentUid:当前不是你出牌
                         ->chupai:当前不能出牌
-                        ->currentState:补花阶段不能出牌
+                        ->currentState:补花阶段不能出牌    阶段状态 0=>发牌 1=>出牌 
                   $mjList:获取玩家麻将             MajiangDao::getPlayerMajiang($uid)
                   判断是否出了一张没有的牌:?????    ArrayUtil::contains($mjList,$mjVal)
-                  $myList:ArrayUtil::removeValue($mjList,$mjVal)
-      
+                  $myList:ArrayUtil::removeValue($mjList,$mjVal)     删除一张牌
+                  MajiangDao::updatePlayerMajiang($uid,$mjList)      更新当前玩家手牌
+                        初始化chuPai信息：
+                              $game->isChuPai         初始值：true
+                                   ->anGang           初始值：true
+                                   ->lastUid          最后一个出牌人（当前人）
+                                    游戏最后一次打出的麻将lastMj判断：
+                                                      lastMj==$MjVal--------->samechupaiCount++    连续出相同牌个数
+                                                            否则   ---------->samechupaiUid连续出牌的首家uid
+                                                                  ---------->samechupaiCount = 1连续出了相同牌的次数
+                              ->lastMj = $mjVal       重新赋值
+                              ->chupai = false        当前是否可以出牌
+                              ->canHu = true          是否可以胡牌
+                              ->chupaiList[$uid]      取出是否已有$uid的出牌列表-------->array_push($chupaiList,$mjVal)
+                                                                              -------->->chupaiList[$uid] = $chupaiList    加入所有出牌列表
+                                                                              -------->->chupaiCount[$uid] +=1;            记录出牌数量
+                                                                              
+                              判断罚款:
+                                    连续出牌罚款:罚款（连续出同牌罚首家，出相同四张牌罚自己）
+                                                判断：->samechupaiCount == 4
+                                                           罚款：SuanFanConstant::fakuan($game->samechupaiUid,$game,$room)
+                                                           ??????
+                                                              ?    $fauid = $game->samechupaiUid;
+                                                              ?    $game->samechupaiCount = 1;
+                                                              ?    $game->samechupaiUid = null;
+                              
+                                    出相同四张牌罚款：$count_value：array_count_values($chupaiList)
+                                                判断：$count_value存在 &&  $count_value==4
+                                                            罚款：SuanFanConstant::fakuan($uid,$game,$room)
+                                                                  $fauid = $uid
+                                                                  
+                             保存外包定将牌(可更换):?????????                              
+                                                            
+                             判断听牌：
+                                    ->ting[$uid] = $request['ting']：听牌赋值
+                              
+                              连杠初始化：
+                                    ->lianGang = 0
+                              
+                              更新redis服务器游戏数据：
+                                    MajiangDao::updateMajiangGame($game)
+                                    
+                              检测游戏结束：
+                                    ->checkGameOver($game)  
+                                    
+                             ----------------------服务端结束-------------------------
+                         向客户端推送：
+                                $pushMsg = array('tag'=>'chupai','sender'=>$uid,'mjVal'=>$mjVal,'game'=>MjGameConstant::getGameSendMsg($game))
+                                如果是听牌：$pushMsg['ting'] = $request['ting']      
+                                如果是罚款：$pushMsg['fauid'] = $fauid    罚款人
+                           推送消息-------RoomConstant::pushMsgToRoom($uid,$pushMsg,$room,true)
+
+
+
+
+        操作：一个人打完牌之后 其他几个人需要操作一下
+        operating($request)：
+                  检测有operatingType参数：checkParams($request, array('operatingType'))
+                             操作参数赋值：$operatingType = (int)$request['operatingType']
+                        发送消息的玩家UID：$uid = $this->senderUid   
+                       获取当前房间的游戏：$game = MajiangDao::getMajiangGame($this->room->id)
+                       判断：
+                        游戏没开始，
+                        当前为出牌阶段，
+                        当前打牌的人不能操作，  $operatingType：0
+                        没有这个操作类型，      MaJiangConstant::hasOperating($operatingType)
+                              有操作类型且能操作：
+                                    获取手牌：MajiangDao::getPlayerMajiang($uid)
+                                        过牌无须检测，
+                                          吃牌合法需要额外检测：$operatingType == 1 && isset($request['chiMjs']
+                                                      检测是否可以吃牌：
+                                                            MjGameConstant::checkChi($room,$game,$uid,$chiMjs），
+                                                            存储吃牌redis：MajiangDao::savePlayerChiPaiMsg($uid,$chiMjs),
+                                                   检测操作吃牌是否合法：MjGameConstant::checkOperating($room,$game,$operatingType,$uid,$mjList))
+                                                      
+                       获取所有操作：$ops = MajiangDao::getOperating($game->id);
+                       判断晚间操作过：if(isset($ops[$uid])) return;//已经操作过了
+                       
+                       添加操作类型：MajiangDao::addOperating($game->id,$uid,$operatingType)
+                                          增加操作次数，用于防止并发：MajiangDao::addOperatingCount($game->id) != 4
+                              推送一个消息 表示该用户已经响应出牌操作：RoomConstant::pushMsgToRoom($uid,array('tag'=>'operating','sender'=>$uid),$room,true)
+                        
+                    杠：
+                        $opUid = null;
+                        $opVal = -1;
+                        $sameOpUid = null;
+                        $operatings = MajiangDao::getOperating($game->id);
+                        $gangUid = null
+                        检测优先操作：遍历$operatings
+                                          判断优先操作的玩家：
+                                          
+                    获取下一个出牌的人：
+                        $nextPlayerUid = MjGameConstant::getNextPlayer($room,$game->currentUid)     
+                             $getNewMj = true;//是否摸新的牌
+                               $mjList = null;
+                        判断$opVal != -1：
+                              有人发起了相同的操作，找离上家最近的人：
+                                                     getClosedUid：
+                                             count($sameOpUid) > 1 ------->$opUid = MjGameConstant::getClosedUid($game->currentUid,$sameOpUid,$room)
+                                                                   --否--> $opUid = $sameOpUid[0]    
+            
+                              获取玩家手牌：$mjList = MajiangDao::getPlayerMajiang($opUid)
+                              判断玩家操作：
+                                          $opVal == 1：吃牌
+                                          
+                                          $opVal == 2：碰牌
+                                          
+                                          $opVal == 3：杠牌
+                                          
+                                          $opVal == 4：胡牌
+                                                      一炮多响：
+                              
+                        杠碰吃胡操作：
+                              新的出牌列表：$chupaiList = $game->chupaiList[$game->currentUid]
+                                    $game：
+                                       $game->chupaiList[$game->currentUid] = ArrayUtil::removeValue($chupaiList,$chupaiList[count($chupaiList) -
+                 
+                    下一个当前操作者：$game->currentUid = $nextPlayerUid
+                    下一个玩家手牌：$nextmjList = MajiangDao::getPlayerMajiang($nextPlayerUid)
+                    
+                    //有花牌必须换//没出过牌，但是有听牌，此时不能给新牌：
+                    
+                    玩家剩余手牌：
+                    
+                    获取一张新麻将：
+                    
+                    
+                    //向操作者和下一个出牌的人以外的人发送操作消息：
+                    
+                    
+                              ExtGameHelper::senderMessage($senders,$pushMsg)
+                    
+                    
+                    //操作者需要额外更新他的麻将列表：
+                    
+                    unset($pushMsg['mjList'])：
+                    
+                    新麻将判断：
+                        是--------->黄庄：
+                              
+                              
+                              流局比下胡：
+                              
+                        
+                              新麻将是什么：
+                              
+                              
+                       不是-------> 
+                       
+                       
+                       
+                    检测外包胡：
+                        
+                        
+                    检测连杠：
+                    
+                    杠的类型：$game->gtype = 1;
+                    最后一次操作的值：$game->lOpVal = $opVal;
+                                    $game->lOpUid = $opUid;
+                    
+                 ----redis-----:
+                    清除操作：MajiangDao::clearOperating($game->id);
+                    更新游戏：MajiangDao::updateMajiangGame($game)
+                    
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
