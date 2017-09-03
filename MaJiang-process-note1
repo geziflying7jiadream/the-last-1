@@ -189,63 +189,180 @@ class/config/ApiConfig.php -> PrcServiceName = MaJiangService
                                                  
                                                  
                                           $opVal == 2：碰牌
-                                          
+                                                 ArrayUtil::removeValue($mjList,$game->lastMj,2)：清除最后一张麻将
+                                                 MajiangDao::updatePlayerMajiang($opUid,$mjList)：更新玩家麻将
+                                                 $pengList = $game->pengList[$opUid]:             碰的牌，加入自己的碰牌列表
+                                                 array_push($pengList,$game->lastMj)：            游戏最后一张麻将，加入碰牌列表，
+                                                 $game->pengList[$opUid] = $pengList：            加入总的碰牌列表，
+                                                 $game->canHu = false：                           能胡：初始false
+                                                 
+                                                 //记录点碰
+                                                 $game->dp[$game->lastMj] = $game->lastUid：      记录点碰
+                                                                          判断第一张碰的麻将：      $game->firstPengMj[$opUid]                     
+                                                 $game->firstPengMj[$opUid] = $game->lastMj：      记录第一张碰的麻将
+                                                 下一个玩家：
+                                                       $nextPlayerUid = $opUid
+                                                       $getNewMj = false
+                                                 
+                                                  //检测外包胡
+                                                 
                                           $opVal == 3：杠牌
-                                          
-                                          $opVal == 4：胡牌
+                                                  $checkCount = 3：                                                      检测杠牌数
+                                                  $mjList = ArrayUtil::removeValue($mjList,$game->lastMj,$checkCount)：  清除碰牌麻将
+                                                  MajiangDao::updatePlayerMajiang($opUid,$mjList)：                      更新玩家麻将
+                                                  
+                                                  $game->canHu = $checkCount == 3：                 能胡：初始值
+                                                  $tempFanData = $game->fanData：                   分数
+                                                  $tempFanInfos = $game->fanInfos：                 分数信息
+                                                  $game = SuanFanConstant::gangOther($opUid,$game->lastUid,$game,$room,$game->lastMj)：杠别人的牌，分数，      返回值：$game
+                                                  
+                                                  //记录点碰
+                                                  $game->dg[$game->lastMj] = $game->lastUid：
+                                                  $game->lastGangMj = $game->lastMj：               最后一张杠牌
+                                                  $nextPlayerUid = $opUid：
+                                                  $getNewMj = $checkCount == 3：
+                                                  
+                                                  //外包胡最后一杠不算分：（判断）
+                                                  
+                                                  
+                                                  MajiangDao::updateMajiangGame($game)：            更新游戏redis
+                                                  $this->checkGameOver($game):                      检测游戏结束
+                                                  
+                                           $opVal == 4：胡牌
                                                       一炮多响：
-                              
-                        杠碰吃胡操作：
+                                                            count($sameOpUid) > 1 && $game->paoType == 1（判断）：paoType:包冲 不包冲  初始值：1
+                                                                                                                           
+                                                                                                      ------->是： $zhuang = null                  庄家初始值：NULL
+                                                                                                                   getRoomPlayerMajiangs($room)    获取所有玩家麻将
+                                                                                                                   $huMjs = array()   胡麻将库      初始值：空数组
+                                                                                                                   循环遍历：$sameOpUid，
+                                                                                                                            getPlayerMajiang($v)            获取遍历玩家的手牌
+                                                                                                                            array_push($mjList,$game->lastMj)： 将游戏最后一张麻将，推入遍历玩家手牌
+                                                                                                                            $allMjs[$v] = $mjList  ?????????我觉得在这里没起作用???????????
+                                                                                                                            $game->pao = $game->lastUid     点炮的人
+                                                                                                                            SuanFanConstant::hu()           返回值：$game 包含（总分，每个分........）
+                                                                                                                                                            $game = SuanFanConstant::hu($v,$mjList,$game,$room,0,$game->lastMj)
+                                                                                                                            $huMjs[$v] = $game->lastMj      点胡麻将  加入胡麻将库
+                                                                                                                            ----
+                                                                                                                            MajiangDao::updateMajiangGame($game)  更新麻将游戏数据redis\
+                                                                                                                            --判断当前胡牌人：
+                                                                                                                                          $v == $game->zhuang ？ 是庄家：$zhuang = $v
+                                                                                                                   -------------遍历结束-------------------------------------------------                        
+                                                                                                                   判断庄家是否为NULL：
+                                                                                                                            $zhuang庄家为空,下一个出牌人坐庄：     $zhuang = MjGameConstant::getNextPlayer($room,$game->pao) 
+                                                                                                                            结束游戏，重新初始逻辑及数据：         $game = MjGameConstant::stopGame($room,$game,$zhuang)    
+                                                                                                                                                                包含：重新洗牌，定庄家，初始化分数
+                                                                                                                                                            
+                                                                                                                                                            
+                                                                                                                        //一炮多响比下胡 
+                                                                                                                        ？？？？？？
+                                                                                                                        ？？？？？
+                                                             ------------------------------更新游戏redis-----------推送客户端----------------------------------------------                                                           ---
+                                                             MajiangDao::updateMajiangGame($game) 
+                                                             $pushMsg = array('tag'=>'hupai','sender'=>$sameOpUid,'huMjs'=>$huMjs,'opVal'=>4,'game'=>MjGameConstant::getGameSendMsg($game),'allMjs'=>$allMjs,'_158'=>array())
+                                                             
+                                                      不是一炮多响：
+                                                            将最后一张麻将推送入胡牌玩家手中：       array_push($mjList,$game->lastMj)    +   sort($mjList)
+                                                                                    点炮人：       $game->pao = $game->lastUid
+                                                                  胡牌，算分，返回游戏$game：       $game = SuanFanConstant::hu($opUid,$mjList,$game,$room,0,$game->lastMj)
+                                                                 结束游戏，初始变量,游戏操作：       $game = MjGameConstant::stopGame($room,$game,$opUid)
+                                                            ------------------------------更新游戏redis-----------推送客户端----------------------------------------------                                                           ---
+                                                             MajiangDao::updateMajiangGame($game) 
+                                                             $pushMsg = array('tag'=>'hupai','sender'=>array($opUid),'huMjs'=>$huMjs,'opVal'=>4,'game'=>MjGameConstant::getGameSendMsg($game),'allMjs'=>$allMjs,'_158'=>array())
+                                            
+                      -------判断一炮多响是否结束------------推送信息到客户端--------检查游戏结束-----返回-----------------                 
+                                            RoomConstant::pushMsgToRoom($opUid,$pushMsg,$room,true);
+                                            $this->checkGameOver($game);
+                                            return             
+                                                                    
+                                                      
+                          杠碰吃胡操作：
                               新的出牌列表：$chupaiList = $game->chupaiList[$game->currentUid]
                                     $game：
                                        $game->chupaiList[$game->currentUid] = ArrayUtil::removeValue($chupaiList,$chupaiList[count($chupaiList) -
                  
-                    下一个当前操作者：$game->currentUid = $nextPlayerUid
-                    下一个玩家手牌：$nextmjList = MajiangDao::getPlayerMajiang($nextPlayerUid)
-                    
-                    //有花牌必须换//没出过牌，但是有听牌，此时不能给新牌：
-                    
-                    玩家剩余手牌：
-                    
-                    获取一张新麻将：
-                    
-                    
-                    //向操作者和下一个出牌的人以外的人发送操作消息：
-                    
-                    
-                              ExtGameHelper::senderMessage($senders,$pushMsg)
-                    
-                    
-                    //操作者需要额外更新他的麻将列表：
-                    
-                    unset($pushMsg['mjList'])：
-                    
-                    新麻将判断：
-                        是--------->黄庄：
+      --------------------下一个操作者----------------------------------------
+                          下一个当前操作者：$game->currentUid = $nextPlayerUid
+                          下一个玩家手牌：$nextmjList = MajiangDao::getPlayerMajiang($nextPlayerUid)
+
+                          //有花牌必须换，不能出牌//没出过牌，但是有听牌，此时不能给新牌：
+                                  if(MaJiangConstant::hasFlowerMj($nextmjList) || (!$game->isChuPai[$nextPlayerUid] && MaJiangConstant::ting($nextmjList,null,null,null,null,$game)))
+                                  真：  $game->chupai = false; 和  $getNewMj = false;      
+                                  假：  $game->chupai = true
+                                  
+                          玩家剩余手牌：
+                                  if(isset($game->mjCount[$opUid]))                       mjCount:每个玩家剩余手牌
+                                  真：$game->mjCount[$opUid] -= 3    少3张
+                                  假：$game->mjCount[$opUid] = 10    
+
+                          获取一张新麻将：
+                                  $newMj = -1：        设置新牌初始值-1
+                                  判断给新牌：
+                                  if($getNewMj)
+                                  真：给新牌   $newMj = MaJiangConstant::getNewMj($game,$opVal)
+
+                          //向操作者和下一个出牌的人以外的人发送操作消息：
+                                      $pushMsg = array('tag'=>'updateCurrentUid','newMj'=>$getNewMj,'opUid'=>$opUid,'opVal'=>$opVal,'game'=>MjGameConstant::getGameSendMsg($game));
+                                      $players = $room->players;
+                                      $senders = array();
+                                      foreach($players as $index => $playUid){
+                                          if($playUid == $opUid || $playUid == $game->currentUid) continue;//下一个出牌人 || 当前操作者，不执行下面，返回循环
+                                          array_push($senders,PlatformDao::getSender($playUid));
+                                      }
+                                    --------向玩家推送消息-------------------------------      
+                                    ExtGameHelper::senderMessage($senders,$pushMsg)
+                          //操作者需要额外更新他的麻将列表：
+                                    $pushMsg['mjList'] = $mjList;
+                                    --------向操作者推送消息-------------------------------
+                                    ExtGameHelper::senderMessage(array(PlatformDao::getSender($opUid)),$pushMsg)
+                                    
+                          unset($pushMsg['mjList'])：清空推送消息中的麻将手牌
+
+                          新麻将判断：
+                              if($getNewMj)
+                              真：--------->
+                                            黄庄：?
+
                               
-                              
-                              流局比下胡：
-                              
-                        
-                              新麻将是什么：
-                              
-                              
-                       不是-------> 
-                       
-                       
-                       
-                    检测外包胡：
-                        
-                        
-                    检测连杠：
-                    
-                    杠的类型：$game->gtype = 1;
-                    最后一次操作的值：$game->lOpVal = $opVal;
-                                    $game->lOpUid = $opUid;
-                    
-                 ----redis-----:
-                    清除操作：MajiangDao::clearOperating($game->id);
-                    更新游戏：MajiangDao::updateMajiangGame($game)
+                                                      流局比下胡：?
+
+
+                               推送的新麻将是什么：
+                                                $mjList = MajiangDao::getPlayerMajiang($game->currentUid);
+                                                array_push($mjList,$newMj);        $newMj新麻将加入玩家手牌
+                                                sort($mjList);
+                                                MajiangDao::updatePlayerMajiang($game->currentUid,$mjList)
+                                                -----------向玩家推送消息---------
+                                                $pushMsg['mjList'] = $mjList;      mjList重新赋值
+                                                $pushMsg['newMjVal'] = $newMj;     推送的：新麻将
+                                                ExtGameHelper::senderMessage(array(PlatformDao::getSender($game->currentUid)),$pushMsg);
+
+                             假：--------> 
+                                                -----------向没有新牌时，推送消息---------
+                                                if($opUid == $game->currentUid){
+                                                    $pushMsg['mjList'] = $mjList;
+                                                }
+                                                ExtGameHelper::senderMessage(array(PlatformDao::getSender($game->currentUid)),$pushMsg)    
+
+
+
+                          检测外包胡：
+                                if($opVal == 3 && self::checkWaiBaoHu($opUid,$mjList,$game,$room,$opVal)){    return;  }
+
+                          检测连杠：
+                                 if($opVal == 3 && $game->lOpVal == 3 && $game->lOpUid == $uid){
+                                   连杠初始值:       $game->lianGang = 1;   
+                                      }
+                                    杠类型初值：      $game->gtype = 1;
+                                 最后一次操作值:      $game->lOpVal = $opVal;
+                                                     $game->lOpUid = $opUid;
+
+                          杠的类型：              $game->gtype = 1;
+                          最后一次操作的值：       $game->lOpVal = $opVal;
+                                                 $game->lOpUid = $opUid;
+                       ----redis---:
+                          清除操作：             MajiangDao::clearOperating($game->id);
+                          更新游戏：             MajiangDao::updateMajiangGame($game)
                     
             
             
