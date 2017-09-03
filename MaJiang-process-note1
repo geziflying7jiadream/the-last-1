@@ -172,7 +172,22 @@ class/config/ApiConfig.php -> PrcServiceName = MaJiangService
                               获取玩家手牌：$mjList = MajiangDao::getPlayerMajiang($opUid)
                               判断玩家操作：
                                           $opVal == 1：吃牌
-                                          
+                                                 $chiMjs = MajiangDao::getPlayerChiPaiMsg($opUid):获取玩家用那两张牌来吃牌
+                                                 $mjList = removeValue($mjList,$chiMjs[0]):删除牌0
+                                                 $mjList = removeValue($mjList,$chiMjs[0]):删除牌1，  新的麻将手牌
+                                                 
+                                                 MajiangDao::updatePlayerMajiang($opUid,$mjList)：更新玩家麻将redis
+                                                 
+                                                 array_push($chiMjs,$game->lastMj):             游戏最后一张麻将，加入吃牌数组，并排序sort($chiMjs)
+                                                 $chiList = isset($game->chiList[$opUid]):      获取 $opUid(操作者) 吃牌列表，
+                                                 array_push($chiList,$chiMjs)：                 吃的牌，加入自己的吃牌列表，
+                                                 $game->chiList[$opUid] = $chiList：            加入总的吃牌列表
+                                                 
+                                                 $game->canHu = false：                         能胡：初始false
+                                                 $nextPlayerUid = $opUid:                       下一个玩家
+                                                 $getNewMj = false：                            新麻将：false
+                                                 
+                                                 
                                           $opVal == 2：碰牌
                                           
                                           $opVal == 3：杠牌
