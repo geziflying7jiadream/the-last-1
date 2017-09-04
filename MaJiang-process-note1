@@ -367,7 +367,36 @@ class/config/ApiConfig.php -> PrcServiceName = MaJiangService
             
             
             
-            
+            听牌：
+                  首先检测请求中是否有mjVal变量，
+                  请求中获取发送者senderUid,房间room，房间游戏$room->id
+                  判断请求中的当前操作者==发送者，不是就return出去
+                  获取发送请求玩家的手牌，判断请求中mjVal是否会胡牌，不胡return
+                  此时，将玩家的听牌设为1：->ting[$uid]=1,出牌设置为true:->chupai[$uid]=true
+                  向操作者以外的其他人发送操作消息：“tag=>updateCurrentUid” “opVal=>6”???
+                  
+                  推送新麻将是什么，
+                  获取新麻将，
+                  将新麻将加入玩家手牌，重新排序
+                  更新玩家麻将，----到此，服务器端麻将数据处理完毕
+                  ----向玩家推送信息--
+                  推送消息，还包含玩家新的麻将手牌mjList，新麻将newMjVal
+                  ----游戏redis---
+                  添加最后一个操作的值，最后一个操作者，
+                  更新当前操作者麻将，
+                  更新麻将游戏
+                  
+           
+           花牌：
+                  首先检测请求中是否有mjVal变量，
+                  请求中获取发送者senderUid,房间room，房间游戏$room->id
+                  判断请求中的当前操作者==发送者，不是就return出去
+                  //首轮补花可以为空，后面不能为空
+                  
+                  
+                  
+                  
+                  
             
             
             
