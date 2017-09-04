@@ -1,0 +1,16 @@
+public function ting($request){
+        if(!$this->checkParams($request,array('mjVal'))) return;
+        $mjVal = (int)$request['mjVal'];
+        $uid = $this->senderUid;
+        $room = $this->room;
+        $game = MajiangDao::getMajiangGame($this->room->id);
+        
+        if($this->currendUid != $uid){
+                return;
+        }
+        $mjList = MajiangDao::getPlayerMajiang($uid);
+        if(!MaJiangConstant::hu($mjVal,$mjList,null,null,null,null,$game)){
+                return;                         //判断发过来的听牌能不能胡，就是这张牌是不是能胡的那张牌对不对！！！！！
+        }
+        
+}
