@@ -1,1 +1,99 @@
 
+//花 （春、夏、秋、冬、梅、兰、竹、菊）
+public function flower($request){
+        if(!$this->checkParams($request, array('mjVal'))) return;
+
+        $mjVals = $request['mjVal'];
+        $uid = $this->senderUid;
+        $room = $this->room;
+        $game = MajiangDao::getMajiangGame($this->room->id);
+
+        if($game->currentUid != $uid){
+            return;
+        }
+        //选择不扭牌
+//        if($game->flowerList[$uid][0] == -1){
+//            return;
+//        }
+        //首轮补花可以为空，后面的不花不能为空
+        if($game->currentState == 1 && $mjVals == null){
+            return;
+        }
+        //不是中发白
+        if($mjVals != null){
+            foreach($mjVals as $index=>$mj){
+                if(!MaJiangConstant::isFlowerMj($mj)){
+                    return;
+                }
+            }
+        }
+
+
+        $flowerList = isset($game->flowerList[$uid])?$game->flowerList[$uid]:array();
+        $mjList = MajiangDao::getPlayerMajiang($uid);
+        //没有该手牌 不能扭
+        foreach($mjVals as $index=>$mj){
+            if(ArrayUtil::indexOf($mjList,$mj) == -1){
+                return;
+            }else{
+                $mjList = ArrayUtil::removeValue($mjList,$mj);
+                array_push($flowerList,$mj);
+                //花杠
+//                if(MaJiangConstant::huagang($mj,$flowerList)){
+//                    $game->lastHuaGangMj = $mj;
+//                    SuanFanConstant::huaGang($uid,$game,$room);
+//                }
+            }
+        }
+
+
+        $game->flowerList[$uid] = $flowerList;
+        //推送新麻将是什么
+        $newMj = -1;
+        for($i = 0;$i<count($mjVals);$i++){
+            $newMj = MaJiangConstant::getNewMj($game,7);
+            array_push($mjList,$newMj);
+        }
+        sort($mjList);
+        MajiangDao::updatePlayerMajiang($game->currentUid,$mjList);
+        //如果没出过牌且没有花牌了还没有听牌，这里还要发送一张麻将,判断mjList为13张，防止下面的新牌是花，然后下轮换花又多牌
+        if($game->currentState == 0 && !MaJiangConstant::hasFlowerMj($mjList)){
+            $game->currentUid = MjGameConstant::getNextPlayer($room,$game->currentUid);
+            $game->firstHuaList[$uid] = 1;
+            $nextMjList = MajiangDao::getPlayerMajiang($game->currentUid);
+            while(!MaJiangConstant::hasFlowerMj($nextMjList) && count($game->firstHuaList) != 4){
+                $game->firstHuaList[$game->currentUid] = 1;
+                $game->currentUid = MjGameConstant::getNextPlayer($room,$game->currentUid);
+                $nextMjList = MajiangDao::getPlayerMajiang($game->currentUid);
+            }
+        }
+        if(count($game->firstHuaList) == 4 && $game->currentState == 0){
+            $game->currentState = 1;
+            $game->chupai = true;
+        }
+        //向操作者以外的人发送操作消息
+        $pushMsg = array('tag'=>'updateCurrentUid','newMj'=>true,'opUid'=>$uid,'opVal'=>7,'game'=>MjGameConstant::getGameSendMsg($game));
+        RoomConstant::pushMsgToRoom($uid,$pushMsg,$room);
+
+
+//        if($game->zhuang != $uid && !$game->isChuPai[$uid] && !MaJiangConstant::hasFlowerMj($mjList) && !MaJiangConstant::ting($mjList,null,null,null,null,$game) ){
+//            $newMj = MaJiangConstant::getNewMj($game,-1);
+//            array_push($mjList,$newMj);
+//            $game->chupai = true;
+//            $pushMsg['game'] = MjGameConstant::getGameSendMsg($game);
+//        }
+
+
+        $pushMsg['mjList'] = $mjList;
+        if($newMj != -1){
+            $pushMsg['newMjVal'] = $newMj;
+        }
+        ExtGameHelper::senderMessage(array($this->sender),$pushMsg);
+
+        $game->lOpVal = 7;
+        $game->lOpUid = $uid;
+
+        MajiangDao::updatePlayerMajiang($uid,$mjList);
+        MajiangDao::updateMajiangGame($game);
+        $this->checkGameOver($game);
+    }
