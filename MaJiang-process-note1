@@ -423,93 +423,124 @@ class/config/ApiConfig.php -> PrcServiceName = MaJiangService
          
          
             
+         自摸：zimo($request)   
+                  当前操作者网络，信息，游戏
+                  
+                  判断游戏没开始：输出自摸错误信息，返回
+                  判断当前不是出牌状态：输出错误信息，返回
+                  判断当前自摸人不是当前出牌人：输出错误信息，返回
+                  
+                  获取玩家麻将信息，
+                  获取胡牌变量：
+                        $hu = MaJiangConstant::hu(-1,$mjList,
+                              isset($game->chiList[$uid]) ? $game->chiList[$uid] : null,
+                              isset($game->pengList[$uid]) ? $game->pengList[$uid] : null,
+                              isset($game->gangList[$uid]) ? $game->gangList[$uid] : null,
+                              isset($game->angangList[$uid]) ? $game->angangList[$uid] : null,
+                              $game
+                          );
+                  判断$hu不胡牌：输出麻将信息，输出错误信息，返回
+                  获取新麻将，算胡牌分数信息，停止游戏返回游戏数据
+                  更新redis麻将信息
+                  
+                  获取发送到客户端的游戏信息，
+                  ........
+                  ........
+                  ........
+            
+           明杠： 
+                gangSelf($request)
+                     检查麻将参数存在，   
+                     没有碰过牌 不可能杠，   
+                     没有碰这张牌 不能杠，   
+                     没有该手牌 不能杠，？？？？
+                     玩家手牌清除该参数，
+                     碰牌列表清除该参数，重新定义，
+                     杠牌列表加入此参数，重新定义杠牌，
+                     定义当前操作者，
+                     明杠算分在游戏中，
+                     更新游戏数据，
+
+                     推送新麻将是什么：
+
+                     向操作者以外的人发送操作消息：
+
+                     新麻将，新麻将列表，加入当前玩家自己的推送消息中，推送给自己，
+
+                     定义给游戏$game-> 游戏连杠，杠类型，最后一次操作值，操作人，最后一次钢的什么牌,
+                     更新玩家麻将，
+                     更新麻将游戏，
+                     检查游戏结束
+                     
+            暗杠：         
+               anGang($request)
+               判断需要暗杠的参数存在，   
+                  暗杠牌数为4，
+                  没有此手牌 || 牌数不等于4，不能杠，返回吧     
+                  手牌中找到此参数，清除手牌中所有此参数，
+                  此牌加入暗杠列表，加入游戏暗杠列表，
+                  原来分数，分数详情，临时存储起来
+                  游戏中，算分::暗杠,
+                  判断玩家剩余麻将，算麻将，
+                  
+                  外包胡最后一杠不算分，
+                        就是上面临时存储的分数
+                  
+                  向操作者意外的人发送消息，
+                                $getNewMj = ($checkCount == 4);         //是否有新牌:true/false
+                                $newMj = -1;
+                                if($getNewMj){
+                                    //推送新麻将是什么
+                                    $newMj = MaJiangConstant::getNewMj($game,3);
+                                }
+                  推送消息：   newMj:新拍的状态              
+                  $pushMsg = array('tag'=>'updateCurrentUid','newMj'=>$getNewMj,'opUid'=>$uid,'opVal'=>3,'game'=>MjGameConstant::getGameSendMsg($game));
+                  RoomConstant::pushMsgToRoom($uid,$pushMsg,$room)
+            
+                  有新牌，新牌值加入推送自己的消息
+                  、、检测外包胡
+                  推送麻将信息 给自己
+                  -------redis中新加入信息--
+                  更新玩家，更新游戏，检查游戏结束与否
+            
+            检测是否外包胡： 
+                  返回值：true、false
+                  是否外包中：判断是否胡，然后结束游戏
+                  ？？？？
+                   ？？     
+                    ？  
             
             
+            强制结束游戏：
+                        endGame（$request）:
+                  请求中的当前游戏，
+                  检查游戏是否结束中，$over设置为true： checkOver（$game, TRUE）为了清除游戏数据
+                  向房间中玩家推送游戏结束消息，pushMsgToRoom(null,$msg,$this->room,true)
             
+            玩家解散房间：
+                        disbandRoom($requset)
+                  删除游戏，删除麻将，删除操作
             
-            
-            
-            
-            
-            
-            
-            
-            
-            
-            
-            
-            
-            
-            
-            
-            
-            
-            
-            
-            
-            
-            
-            
-            
-            
-            
-            
-            
-            
-            
-            
-            
-            
-            
-            
-            
-            
-            
+            玩家向游戏房间发送消息：
+                        gameMessage()???
+                        ??渣滓工程，没做完???
             
             检查游戏结束：
-                        checkGameOver（$game,$over=false）
+                        checkGameOver（$game,$over=false）：就是清除数据的过程
                  当前局数大于最大局数，或者$over为真：if($game->currentCount > $game->maxCount || $over)  说明游戏结束，
                  向平台所有人发送自己分数记录，
                                     结束游戏，
                  ----redis----结束游戏后，删除数据操作----
                  删除麻将游戏，删除玩家麻将，删除操作
-                        
             
             
             
+            抢杠胡：
+            minggangCallBack($request)
+                  ？？？？
             
-            
-            
-            
-            
-            
-            
-            
-            
-            
-            
-            
-            
-            
-            
-            
-            
-            
-            
-            
-            
-            
-            
-            
-            
-            
-            
-            
-            
-            
-            
-            
-            
+            ？？？
+                  ？？？？
             
             
             
