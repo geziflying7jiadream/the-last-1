@@ -376,13 +376,13 @@ class/config/ApiConfig.php -> PrcServiceName = MaJiangService
                   向操作者以外的其他人发送操作消息：“tag=>updateCurrentUid” “opVal=>6”???
                   
                   推送新麻将是什么，
-                  获取新麻将，
+                  获取新麻将，opVal:6
                   将新麻将加入玩家手牌，重新排序
                   更新玩家麻将，----到此，服务器端麻将数据处理完毕
                   ----向玩家推送信息--
                   推送消息，还包含玩家新的麻将手牌mjList，新麻将newMjVal
                   ----游戏redis---
-                  添加最后一个操作的值，最后一个操作者，
+                  添加最后一个操作的值：6，最后一个操作者，
                   更新当前操作者麻将，
                   更新麻将游戏
                   
@@ -393,10 +393,35 @@ class/config/ApiConfig.php -> PrcServiceName = MaJiangService
                   判断请求中的当前操作者==发送者，不是就return出去
                   //首轮补花可以为空，后面不能为空
                   
+                  //判断不是中发白
+                  当前游戏操作者的花牌列表，
+                  当前游戏操作者的手牌，
+                  //判断传递过来的麻将mjVals，手牌中有没有这些麻将
+                        没有这些麻将，indexOf==-1返回，
+                        有这些麻将，先在麻将手牌中删除当前麻将值    +   然后再将麻将值加入花麻将列表，
+                   将当前操作者花牌麻，重新赋值游戏花牌中，
+                   遍历：
+                         获取新麻将列，opVal:7
+                         将新麻将加入玩家手牌，
+                   重新排序,
+                   更新玩家手牌，
+                   
+                   **//如果没出过牌且没有花牌了还没有听牌，这里还要发送一张麻将,判断mjList为13张，防止下面的新牌是花，然后下轮换花又多牌
+                     当前操作状态：0 发牌 并且没有花牌，  
+                        ？？？？？？？
+                        ？？？
+                        ？？
+                        ？     
+                  ----向玩家推送信息--
+                  推送消息，还包含玩家新的麻将手牌mjList，新麻将newMjVal
+                  ----游戏redis---
+                  添加最后一个操作的值：7，最后一个操作者，
+                  更新当前操作者麻将，
+                  更新麻将游戏,
+                  检查游戏是否结束:checkGameOver($game,$over=false)
                   
-                  
-                  
-                  
+         
+         
             
             
             
@@ -441,8 +466,14 @@ class/config/ApiConfig.php -> PrcServiceName = MaJiangService
             
             
             
-            
-            
+            检查游戏结束：
+                        checkGameOver（$game,$over=false）
+                 当前局数大于最大局数，或者$over为真：if($game->currentCount > $game->maxCount || $over)  说明游戏结束，
+                 向平台所有人发送自己分数记录，
+                                    结束游戏，
+                 ----redis----结束游戏后，删除数据操作----
+                 删除麻将游戏，删除玩家麻将，删除操作
+                        
             
             
             
