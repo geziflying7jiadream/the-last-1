@@ -66,12 +66,12 @@ class/config/ApiConfig.php -> PrcServiceName = MaJiangService
                         ->currentUid:当前不是你出牌
                         ->chupai:当前不能出牌
                         ->currentState:补花阶段不能出牌    阶段状态 0=>发牌 1=>出牌 
-                  $mjList:获取玩家麻将             MajiangDao::getPlayerMajiang($uid)
-                  判断是否出了一张没有的牌:?????    ArrayUtil::contains($mjList,$mjVal)
-                  $myList:ArrayUtil::removeValue($mjList,$mjVal)     删除一张牌
+                  $mjList:获取玩家麻将             MajiangDao::getPlayerMajiang($uid)（获取手牌：包含要出的那张牌）
+                  判断是否出了一张手中没有的牌:    ArrayUtil::contains($mjList,$mjVal)
+                  $myList:ArrayUtil::removeValue($mjList,$mjVal)     删除这张牌（这之前手牌还没更新）
                   MajiangDao::updatePlayerMajiang($uid,$mjList)      更新当前玩家手牌
                         初始化chuPai信息：
-                              $game->isChuPai         初始值：true
+                              $game->isChuPai[$uid]   初始值：true    记录是否出过牌
                                    ->anGang           初始值：true
                                    ->lastUid          最后一个出牌人（当前人）
                                     游戏最后一次打出的麻将lastMj判断：
