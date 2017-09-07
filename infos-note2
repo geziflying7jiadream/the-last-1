@@ -128,14 +128,16 @@ swoole/
   bussiness/
         asyncdb/
         extgame/
-            ExtGameBusiness.php
-        forward/
+            ExtGameBusiness.php         游戏服务器接受消息的载体 （业务逻辑载体）
+        forward/ 
+            ForwardBusiness.php         数据转发服务          targets：目标服务器号
+            ForwardConfig.php           数据转发服务配置
         game/
         test/
-    BaseBusiness.php
+    BaseBusiness.php                    业务解析模型
   client/
   task/
   timer/
-    SwooleProxyServer.php
+    SwooleProxyServer.php               swoole代理服务器（包含swooleSetting、SwooleTimerManager、SwooleTaskManager、ForwardClient、ForwardClientPool、BaseBusiness）    
     SwooleSetting.php
-    SwooleWebSocketProxyServer.php
+    SwooleWebSocketProxyServer.php      websocket服务器 继承 swoole代理服务器
