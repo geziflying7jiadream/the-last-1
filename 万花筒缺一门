@@ -1,4 +1,100 @@
- /**是否缺一门*/
+
+//混一色
+if(self::isHunYiSe($mjList,$pengList,$gangList,$angangList)){
+            $typeHua += 20;
+            //$isbixiahu = true;
+            echo "混一色:20\n";
+        }
+
+//押绝（听一张该张被碰过） +20
+        if(count($ting) == 1 && isset($game->dp[$ting[0]])){
+            $typeHua += 20;
+            //$isbixiahu = true;
+            $isjuezhang = true;
+            echo "绝张:20\n";
+        }
+        
+//无花果（没有硬花胡牌）+20
+        if($yinHua == 0){
+            $typeHua += 20;
+            //$isbixiahu = true;
+            echo "无花果:20\n";
+        }        
+
+
+//地胡（起手听牌） +30
+        if(isset($game->ting[$uid])){
+             $typeHua += 2;
+            echo "地胡:2\n";
+        }
+//地胡（地和），是麻将中的一种胡牌形式，指的是庄家出第一张后，闲家胡牌，称之为地胡
+
+
+
+//万条筒缺一门+1
+        if(self::isLackOne($mjList,$pengList,$gangList,$angangList)){
+            $ruanHua += 1;
+            echo "缺一门:1\n";
+        }
+
+
+
+
+//手三张
+foreach($count_Values as $mj=>$count){
+            if($mj >= 31 && $mj <= 34 && $count >= 3){
+                $ruanHua += 1;
+                echo "手三张:1\n";
+            }
+        }
+
+
+//花杠开
+if($game->lOpUid == $uid && $game->lOpVal == 7){
+//            if($game->lastHuaGangMj != -1){
+//                $typeHua += 20;
+//                //$isbixiahu = true;
+//                echo "花杠开:20\n";
+//            }else{
+                $typeHua += 2;
+                //$isbixiahu = true;
+                echo "花开:10\n";
+//            }
+        }
+
+
+//花杠
+        if($yinHua >= 4){
+            $hua_count_values = array_count_values($game->flowerList[$uid]);
+            if($hua_count_values){
+                $mlzj_count = 0;
+                $cxqd_count = 0;
+                foreach($hua_count_values as $mj=>$count){
+                    if($mj>= 28 && $mj <= 30 && $count == 4){
+                        //$ruanHua += 40;
+                        //$isbixiahu = true;
+                        echo "花杠:40\n";
+                    }else if($mj>=35 && $mj<= 38){
+                        $mlzj_count++;
+                    }else if($mj>=39 && $mj<= 42){
+                        $cxqd_count++;
+                    }
+                }
+                if($mlzj_count == 4){
+                    //$ruanHua += 40;
+                    //$isbixiahu = true;
+                    echo "花杠:40\n";
+                }
+                if($cxqd_count == 4){
+                    //$ruanHua += 40;
+                    //$isbixiahu = true;
+                    echo "花杠:40\n";
+                }
+            }
+        }
+
+
+/**是否缺一门*/
     public static function isLackOne($mjList,$pengList,$gangList,$angangList){
         $mjList = ArrayUtil::cloneArray($mjList);
         if($pengList != null) foreach($pengList as $index => $mj) array_push($mjList,$mj);
@@ -19,6 +115,22 @@
         }
         return false;
     }
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
     /** 判断是否混一色 */
     public static function isHunYiSe($mjList,$pengList,$gangList,$angangList){
         $mjList = ArrayUtil::cloneArray($mjList);
