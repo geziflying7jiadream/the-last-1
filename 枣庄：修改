@@ -48,4 +48,35 @@
                                                     在操作中，判断当前出牌的人是不是漂（条件：$game->piaoList[$game->currentUid] 存在）
                      
                                                                                                          
-                                                                            
+ ----------------------------------------------------------------------------------------------------------------------------------
+ 飘：
+ $piaoBei = array();//每一个uid 票次数翻倍
+ $piaoMax;//每一次飘之后，与牌型*的最大那个倍数
+ 
+ 初始化游戏：startGame()中，初始化每一个$game->piaoBei[$uid] = -1;//-1没飘
+            $piaoMax = 0;
+ 
+ 出牌：
+    判断$game->ting[uid]存在时，
+            判断出的那张牌，是否能胡
+                //如果能胡，继续,计算飘后翻倍，翻倍的最大倍数：$game->piaoMax 
+                $game = MajiangConstant::piaoBei($uid,$mj,$mjList,$chiList,$pengList,$gangList,$angangList,$game);//$game->piaoMax   
+ 自摸：
+    判断 $game->piaoBei[uid] !=-1 时，飘
+          但是，还需要满足，自摸飘的$zimoPiaoBei 大于等于 游戏中 最大飘倍数$game->piaoMax 
+           $zimoPiaoBei = MajiangConstant::zimoPiaoBei($uid,-1,$mjList,$chiList,$pengList,$gangList,$angangList,$game);//自摸当前麻将$mj = -1
+          当$zimoPiaoBei >= $game->piaoMax时，游戏中最大倍数改变
+          自摸飘的最大倍数改变：$game->piaoMax = $zimoPiaoBei；
+          
+出牌飘倍：
+      piaoBei:飘就翻倍
+        三元判断，初始次数飘倍是否存在 !=-1 ? 已存在$game->piaoBei[uid] : 1;
+        $piaoBei *= 2;
+        $paixing = 1;
+          特殊牌型：$paixing *=2;
+        $piao = $piaoBei * $paixing;
+        if($piao > $game->piaoMax) $game->piaoMax = $piao;
+        $game->piaoBei[uid] = $piaoBei;
+          返回值：$game
+       zimoPiaoBei:自摸飘倍
+        同上
