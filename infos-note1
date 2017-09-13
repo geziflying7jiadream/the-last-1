@@ -11,7 +11,11 @@ maJiangConstants
      * 35-42        梅兰竹菊，春夏秋冬
      * 每张麻将1张
      
-    $operatingTypes ：操作类型 0过 1吃 2碰 3杠 4胡 5自摸 6暗杠
+    $operatingTypes ：操作类型 0过 1吃 2碰 3杠 4胡 5自摸 6暗杠 $opVal   
+    ----------------------------------------
+    suanfanConstant中$type:胡的类型，不是操作
+    $type:int 0-点炮 1-自摸  2-抢杠胡
+    ----------------------------------------
     refreshMajiang（）：洗牌
     
     faMj($room,$game):发麻将
