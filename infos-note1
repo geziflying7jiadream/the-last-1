@@ -124,18 +124,37 @@ MaJiangService
                                 其次：获取发送请求的创建房间的数据$request['createData'];
                                 这个数据是一个数组，从这数组中，取出cardtype,存在即为cardtype，否则，默认为8,；根据cardtype计算局数：cardtype/2
                                 从这个数组中取出paotype:包冲，不包冲，默认包冲1；从这个数组中，取出canChi，能吃，不能吃，默认能吃：true；
-                                根据房间号，局数，创建游戏createGame();将paotype
+                                根据房间号，局数，创建游戏createGame();
+                                                                    createGame：创建的游戏数据是金花牌局游戏，就是初始化金花牌局的数据；
+                                                                    游戏id就是房间id，游戏当前操作者、庄家就是房间中第一个玩家，游戏当前局数为1，最大局数为传递的局数，
+                                                                    游戏中这一局的麻将就是洗牌后的麻将，总共麻将数就是这一局麻将的count，
+                                                                    返回值：上面初始化的数据及麻将信息
+                                将paotype,canchi写入刚刚创建好的游戏数据中，更新游戏数据；此时游戏已经有了
+                                向玩家推送消息senderMessage:
+                                那个玩家，
+                                tag:initGame，
+                                game:getGameSendMsg(不包含这一局的麻将，不包含最后一次mewMj），needShowOp:false不展示操作
                         】
+    
+    joinRoom($request):玩家加入房间
+                      描述：【
+                                保存发送者信息、网络信息以及角色信息，
+                                获取麻将游戏：getMajiangGame($this->room->id)
+                                推送消息：初始化游戏initgame,以及获取到的游戏需要发送到客户端的数据（不包含这一局的麻将，不包含最后一次mewMj）
+                      】
     
     loginGame(request):玩家登录游戏服务器
                       描述：【
-                              发送请求，玩家登陆信息及角色存储，
+                              params:发送请求，
+                              发送者玩家信息、网络信息及角色信息存储，
                               获取当前房间的房间号码，游戏数据，玩家麻将，操作类型，
                               $needShowOp = false;//需要展示操作类型（提示前端做出相应操作），
-                              判断登录游戏时，不是玩家出牌，且，玩家没有过操作，且，当前游戏当前操作作者出过牌，
+                              判断登录游戏时，玩家不是出牌状态，且，玩家没有过操作，且，当前游戏当前操作者出过牌，
                                     满足条件：展示操作类型$needShowOp = true;
                               登录游戏时，最后的新牌 $newMj = -1;
-                              如果当前是出牌状态，且，当前操作者是发送者玩家， $newMj = $game->newMj;可以获得新的麻将                  
+                              如果当前是出牌状态，且，当前操作者是发送者玩家， $newMj = $game->newMj;可以获得新的麻将   
+                              获取游戏需要发送到客户端的数据，将新麻将加入到这个数据组里面，以$sendGameData发送game数据的形式；结合这一句的麻将mjList，needShowOp,
+                              initGame的方法，推送给玩家
                            】                     
                 PlatformDao类：角色临时信息保存dao
                             saveSender($uid,$sender):保存发送者的信息
@@ -154,7 +173,26 @@ MaJiangService
                 MjGameConstant类：游戏相关逻辑
                             getGameSendMsg($game)   获取游戏需要发送到客户端的 数据  
                             
-
+    leaveRoom($request):玩家离开房间
+                描述：【
+                        没有留下一点点痕迹.......
+                】        
+                        
+    endGame($request):强制结束游戏    
+                描述：【
+                        根据当前房间游戏id，获取麻将游戏getMajiangGame数据；
+                        检测游戏结束checkGameOver($game,true); true:代表游戏直接结束，$game是为了判断局数超过没有，或者其他结束标志规则
+                        向房间中的玩家推送游戏结束endGame消息
+                】
+    
+    disbandRoom($request):玩家解散房间
+                描述：【
+                        删除麻将游戏：delMajiangGame(),
+                        删除房间中玩家的麻将：delPlayerMajiangByRoom()，
+                        删除操作类型：clearOperating()
+                】
+    
+    sendMessage():玩家向游戏房间发送消息
 #################################################
 
 
