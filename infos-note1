@@ -118,7 +118,25 @@ maJiangConstants
 MaJiangService
 麻将相关逻辑消息处理
 ########################################################################
+    createRoom($request):创建游戏房间
+                        描述：【
+                                创建房间时，首先要将网络发送者的信息，存储到平台，
+                                其次：获取发送请求的创建房间的数据$request['createData'];
+                                这个数据是一个数组，从这数组中，取出cardtype,存在即为cardtype，否则，默认为8,；根据cardtype计算局数：cardtype/2
+                                从这个数组中取出paotype:包冲，不包冲，默认包冲1；从这个数组中，取出canChi，能吃，不能吃，默认能吃：true；
+                                根据房间号，局数，创建游戏createGame();将paotype
+                        】
+    
     loginGame(request):玩家登录游戏服务器
+                      描述：【
+                              发送请求，玩家登陆信息及角色存储，
+                              获取当前房间的房间号码，游戏数据，玩家麻将，操作类型，
+                              $needShowOp = false;//需要展示操作类型（提示前端做出相应操作），
+                              判断登录游戏时，不是玩家出牌，且，玩家没有过操作，且，当前游戏当前操作作者出过牌，
+                                    满足条件：展示操作类型$needShowOp = true;
+                              登录游戏时，最后的新牌 $newMj = -1;
+                              如果当前是出牌状态，且，当前操作者是发送者玩家， $newMj = $game->newMj;可以获得新的麻将                  
+                           】                     
                 PlatformDao类：角色临时信息保存dao
                             saveSender($uid,$sender):保存发送者的信息
                                     $uid -> $senderUid 发送消息的玩家UID
