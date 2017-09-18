@@ -14,17 +14,16 @@ class LogTool{
     /**
      * 日志记录
      * @param $log
-     * @param string $dirName
-     * @param string $fileName
      */
-    public static function log($log,$dirName = "./",$fileName = ""){
+    public static function log($log){
         $toFile = false;
         if(isset(SwooleSetting::$setting['daemonize']) && SwooleSetting::$setting['daemonize'] == 1){
             $toFile = true;
         }
-        $toFileName = $dirName . $fileName . "_" . date('Y-m-d');
-        if($fileName == "" && isset(SwooleSetting::$setting['process_title'])){
-            $toFileName = $dirName . SwooleSetting::$setting['process_title'];
+        $dirName = "/tmp/";
+        $toFileName = $dirName . date('Y-m-d');
+        if(isset(SwooleSetting::$setting['process_title'])){
+            $toFileName = $dirName . SwooleSetting::$setting['process_title'] . "_" . date('Y-m-d');
         }
         if(!is_dir($dirName)){
             mkdir($dirName);
