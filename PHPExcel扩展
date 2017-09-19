@@ -1,0 +1,21 @@
+# 每天进步一点点，未来收获一点点.
+
+PHPExcel扩展，放置在项目扩展中：
+
+文件名定义为PHPExcel:
+PHPExcel.php中，有一段如下代码，
+是为了将PHPExcel扩展文件放置在/libs/文件夹下：
+-------------------------------------------------------
+PHPExcel.php
+
+/** PHPExcel root directory */
+if (!defined('PHPEXCEL_ROOT')) {
+    define('PHPEXCEL_ROOT', dirname(__FILE__) . '/');
+    require(PHPEXCEL_ROOT . 'PHPExcel/Autoloader.php');
+}
+------------------------------------------------------
+Application/libs
+                PHPExcel.php
+                /PHPExcel/
+                    下面是PHPExcel扩展文件以及文件夹
+                
